@@ -85,7 +85,7 @@ class WGAN():
         FloatTensor=torch.cuda.FloatTensor
         for epoch in range(100):
             for i,(imgs,_) in enumerate(self.data):
-                crop_imgs =imgs[:,:,self.input_size*15//2:self.input_size*17//2,self.input_size*15//2:self.input_size*17//2]
+                crop_imgs =imgs[:,:,self.input_size*7//2:self.input_size*9//2,self.input_size*7//2:self.input_size*9//2]
                 real_imgs =Variable(crop_imgs.type(FloatTensor))
                 z = Variable(FloatTensor(np.random.normal(0, 1, (self.config['batchsize'], self.config['z_dim']))))
 

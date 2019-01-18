@@ -28,7 +28,7 @@ def test():
 if __name__ == "__main__":
     data =get_dataloader(opt.img_size,opt.batchsize,opt.img_path)
     config = {k:v for k,v in opt._get_kwargs()}
-    init_size =opt.img_size//16
+    init_size =opt.img_size//8
     g_0 = Generator(init_size,opt.batchsize)
     d_0 = Discriminator(init_size)
     gan = WGAN(d_0, g_0, data, config,init_size)
