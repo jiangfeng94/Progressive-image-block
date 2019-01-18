@@ -60,11 +60,8 @@ class WGAN():
         FloatTensor=torch.cuda.FloatTensor
         alpha = FloatTensor(np.random.random((self.config["batchsize"],1,1,1)))
         interpolates =(alpha*real_img +(1-alpha)*fake_img).requires_grad_(True)
-        print(interpolates.size())
         d_interpolates=self.D(interpolates)
-        print(d_interpolates.size())
         fake =Variable(FloatTensor(self.config["batchsize"],1).fill_(1.0),requires_grad=False)
-
         gradients =torch.autograd.grad(
             outputs =d_interpolates,
             inputs =interpolates,
