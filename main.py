@@ -11,7 +11,7 @@ parse.add_argument('--b1',type=float,default=0.5)
 parse.add_argument('--b2',type=float,default=0.999)
 parse.add_argument('--z_dim',type=int,default=100)
 parse.add_argument('--channels',type=int,default=1)
-parse.add_argument('--img_size',type=int,default=512)
+parse.add_argument('--img_size',type=int,default=256)
 parse.add_argument('--img_path',type=str,default='D:\img_align_celeba')
 opt =parse.parse_args()
 
