@@ -18,10 +18,8 @@ opt =parse.parse_args()
 
 
 def test():
-    g_0 = Generator(opt.img_size//16,opt.batchsize)
-    torch.load('model/g_0.pkl')
-    g_0.eval()
-    z = torch.autograd.Variable(torch.FloatTensor(np.random.normal(0, 1, (opt.batchsize, opt.z_dim))))
+    g_0 = torch.load('model/g_0.pkl')
+    z = torch.autograd.Variable(torch.cuda.FloatTensor(np.random.normal(0, 1, (opt.batchsize, opt.z_dim))))
     output = g_0(z)
     torchvision.utils.save_image(output.data, 'output/test.png' , nrow=4, normalize=True)
 

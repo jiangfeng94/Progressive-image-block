@@ -78,8 +78,8 @@ class WGAN():
     def train(self):
         self.D.cuda()
         self.G.cuda()
-        torch.load('model/g_0.pkl')
-        torch.load('model/d_0.pkl')
+        self.G=torch.load('model/g_0.pkl')
+        self.D=torch.load('model/d_0.pkl')
         self.optimizer_D = torch.optim.Adam(self.D.parameters(), lr=self.config['lr'], betas=(self.config['b1'], self.config['b2']))
         self.optimizer_G = torch.optim.Adam(self.G.parameters(), lr=self.config['lr'], betas=(self.config['b1'], self.config['b2']))
         FloatTensor=torch.cuda.FloatTensor
@@ -95,13 +95,13 @@ class WGAN():
                 loss_D = -torch.mean(self.D(real_imgs)) + torch.mean(self.D(fake_imgs))+10*gradient_penalty
                 loss_D.backward()
                 self.optimizer_D.step()
-
-                self.optimizer_G.zero_grad()
-                gen_imgs =self.G(z)
-                loss_G =-torch.mean(self.D(gen_imgs))
-                loss_G.backward()
-                self.optimizer_G.step()
-                print ("[Epoch %d] [Batch %d/%d] [D loss: %f] [G loss: %f] " % (epoch, i, len( self.data),
+                for k in range(2):
+                    self.optimizer_G.zero_grad()
+                    gen_imgs =self.G(z)
+                    loss_G =-torch.mean(self.D(gen_imgs))
+                    loss_G.backward()
+                    self.optimizer_G.step()
+                    print ("[Epoch %d] [Batch %d/%d] [D loss: %f] [G loss: %f] " % (epoch, i, len( self.data),
                                                             loss_D.item(), loss_G.item()))
                 if i % 100 == 0:
                     if not os.path.exists('output'):
