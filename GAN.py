@@ -48,15 +48,16 @@ class Discriminator(nn.Module):
         return self.dis(img)
 
 class WGAN():
-    def __init__(self,D,G,data,config,init_size):
-        self.D = D
-        self.G = G
+    def __init__(self,data,config,init_size,total_epoch):
         self.data =data
         self.config =config
         self.gamma = 0.75
         self.lambda_k = 0.001
         self.k = 0.
         self.input_size =init_size
+        self.epochs =total_epoch
+        self.D = Discriminator(init_size)
+        self.G = Generator(init_size,self.config["batchsize"])
     def compute_gradient_penalty(self,real_img, fake_img):
         FloatTensor=torch.cuda.FloatTensor
         alpha = FloatTensor(np.random.random((self.config["batchsize"],1,1,1)))
@@ -76,37 +77,38 @@ class WGAN():
         gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean()
         return gradient_penalty
     def train(self):
+        
         self.D.cuda()
         self.G.cuda()
-        self.G=torch.load('model/g_0.pkl')
-        self.D=torch.load('model/d_0.pkl')
-        self.optimizer_D = torch.optim.Adam(self.D.parameters(), lr=self.config['lr'], betas=(self.config['b1'], self.config['b2']))
+        #self.G=torch.load('model/g_0.pkl')
+        #self.D=torch.load('model/d_0.pkl')
+        self.optimizer_D = torch.optim.SGD(self.D.parameters(), lr=self.config['lr']) #, betas=(self.config['b1'], self.config['b2']))
         self.optimizer_G = torch.optim.Adam(self.G.parameters(), lr=self.config['lr'], betas=(self.config['b1'], self.config['b2']))
         FloatTensor=torch.cuda.FloatTensor
-        for epoch in range(100):
+        for epoch in range(self.epochs):
             for i,(imgs,_) in enumerate(self.data):
                 crop_imgs =imgs[:,:,self.input_size*7//2:self.input_size*9//2,self.input_size*7//2:self.input_size*9//2]
                 real_imgs =Variable(crop_imgs.type(FloatTensor))
                 z = Variable(FloatTensor(np.random.normal(0, 1, (self.config['batchsize'], self.config['z_dim']))))
-
-                self.optimizer_D.zero_grad()
-                fake_imgs =self.G(z)
-                gradient_penalty =self.compute_gradient_penalty( real_imgs.data, fake_imgs.data)
-                loss_D = -torch.mean(self.D(real_imgs)) + torch.mean(self.D(fake_imgs))+10*gradient_penalty
-                loss_D.backward()
-                self.optimizer_D.step()
-                for k in range(2):
-                    self.optimizer_G.zero_grad()
-                    gen_imgs =self.G(z)
-                    loss_G =-torch.mean(self.D(gen_imgs))
-                    loss_G.backward()
-                    self.optimizer_G.step()
+                for k in range(5):
+                    self.optimizer_D.zero_grad()
+                    fake_imgs =self.G(z)
+                    gradient_penalty =self.compute_gradient_penalty( real_imgs.data, fake_imgs.data)
+                    loss_D = -torch.mean(self.D(real_imgs)) + torch.mean(self.D(fake_imgs))+10*gradient_penalty
+                    loss_D.backward()
+                    self.optimizer_D.step()
+                
+                self.optimizer_G.zero_grad()
+                gen_imgs =self.G(z)
+                loss_G =-torch.mean(self.D(gen_imgs))
+                loss_G.backward()
+                self.optimizer_G.step()
+                if i % 100 == 0:
+                    if not os.path.exists('output'): 
+                        os.mkdir('output')
                     print ("[Epoch %d] [Batch %d/%d] [D loss: %f] [G loss: %f] " % (epoch, i, len( self.data),
                                                             loss_D.item(), loss_G.item()))
-                if i % 100 == 0:
-                    if not os.path.exists('output'):
-                        os.mkdir('output')
                     torchvision.utils.save_image(real_imgs.data, 'output/%d_crop.png' % (epoch * len(self.data) + i), nrow=4, normalize=True)
                     torchvision.utils.save_image(gen_imgs.data, 'output/%d.png' % (epoch * len(self.data) + i), nrow=4, normalize=True)
-                    torch.save(self.D, 'model/d_0.pkl')
-                    torch.save(self.G, 'model/g_0.pkl')
+            torch.save(self.D, 'model/d_0_ep%d.pkl'%(epoch))
+            torch.save(self.G, 'model/g_0_ep%d.pkl'%(epoch))
