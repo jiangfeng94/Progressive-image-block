@@ -103,7 +103,7 @@ class EPN():
     def train(self):
         gan_loss =torch.nn.MSELoss()
         pixel_loss =torch.nn.L1Loss()
-        lambda_pixel = 100
+        lambda_pixel = 10
         Net_G =Generator()
         Net_D =Discriminator()
         Net_G.cuda()
@@ -134,7 +134,7 @@ class EPN():
                 center_img_B =fake_B[:,:,self.output_size//2-self.input_size//2:self.output_size//2+self.input_size//2,self.output_size//2-self.input_size//2:self.output_size//2+self.input_size//2]
                 center_img_A =imgs_A[:,:,self.output_size//2-self.input_size//2:self.output_size//2+self.input_size//2,self.output_size//2-self.input_size//2:self.output_size//2+self.input_size//2]
                 
-                loss_pixel = pixel_loss(fake_B, real_B) +pixel_loss(center_img_B.cuda(),center_img_A.cuda())
+                loss_pixel = pixel_loss(fake_B, real_B) #pixel_loss(center_img_B.cuda(),center_img_A.cuda())
                 g_loss =loss_gan +lambda_pixel * loss_pixel
                 g_loss.backward()
                 optimizer_G.step()

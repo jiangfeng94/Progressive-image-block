@@ -31,8 +31,8 @@ def test():
     output_1 = g_1(intput_1)
     torchvision.utils.save_image(output_1.data, 'output/test_64.png' , nrow=4, normalize=True)
     #CEN generate 64*64*3
-    g_2 = torch.load('model/EPN_128/g_2_ep0.pkl')
-    intput_2 =torch.autograd.Variable(torch.cuda.FloatTensor(np.zeros([16,128,128])))
+    g_2 = torch.load('model/EPN_128/g_1_ep0.pkl')
+    intput_2 =torch.autograd.Variable(torch.cuda.FloatTensor(np.zeros([16,3,128,128])))
     intput_2[:,:,32:96,32:96]=output_1
     output_2 = g_2(intput_2)
     torchvision.utils.save_image(output_2.data, 'output/test_128.png' , nrow=4, normalize=True)
@@ -44,8 +44,8 @@ if __name__ == "__main__":
     
     #gan = WGAN(data,config,progressive_size[0])
     #gan.train()
-    epn_1 =EPN(data,progressive_size[0],progressive_size[1],config,1)
-    epn_1.train()
+    #epn_1 =EPN(data,progressive_size[0],progressive_size[1],config,1)
+    #epn_1.train()
     #epn_2 =EPN(data,progressive_size[1],progressive_size[2],config,1)
     #epn_2.train()
     test()
